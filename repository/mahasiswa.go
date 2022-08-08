@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"errors"
 	"golang.org/x/crypto/bcrypt"
+	"net/http"
+	"regexp"
 )
 
 type MahasiswaRepository struct {
@@ -62,4 +64,36 @@ func (u *MahasiswaRepository) UpdateDataMahasiswa(id int, name string) error {
 	}
 	_, err = u.db.Exec(statement, name, id)
 	return err
+}
+
+func (u *MahasiswaRepository) Register(name, email, password string) (userId int, responseCode int, err error) {
+	isAvailble, err := u.CheckEmail(email)
+	if err != nil {
+		return -1, http.StatusBadRequest, err
+	}
+	if !isAvailble {
+		return -1, http.StatusBadRequest, errors.New("Email has been used")
+	}
+	regex, err := regexp.Compile("^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$")
+	if err != nil {
+		return -1, http.StatusInternalServerError, err
+	}
+	isValid := regex.Match([]byte(email))
+	if !isValid {
+		return -1, http.StatusBadRequest, errors.New("invalid email")
+	}
+	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	sqlStmt := "INSERT mahasiswa INTO (name,email,password) VALUES (?,?,?)"
+	res, err := u.db.Exec(sqlStmt, name, hashedPassword)
+	if err != nil {
+		return -1, http.StatusInternalServerError, err
+	}
+	if err != nil {
+		return -1, http.StatusInternalServerError, err
+	}
+	resId, err := res.LastInsertId()
+	if err != nil {
+		return -1, http.StatusInternalServerError, err
+	}
+	return int(resId), http.StatusOK, err
 }
