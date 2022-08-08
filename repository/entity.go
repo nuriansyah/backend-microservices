@@ -13,3 +13,8 @@ type Dosen struct {
 	Email  string  `json:"email"`
 	Avatar *string `json:"avatar"`
 }
+
+type Log struct {
+	Id   int    `json:"id"`
+	desc string `json:"desc"`
+}

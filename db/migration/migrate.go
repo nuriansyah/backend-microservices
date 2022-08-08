@@ -22,6 +22,11 @@ CREATE TABLE IF NOT EXISTS mahasiswa (
     password varchar(255) not null,
 	avatar varchar(255) null
 );
+CREATE TABLE IF NOT EXISTS log (
+    id integer not null primary key AUTOINCREMENT,
+	log varchar(255) not null,
+    sqltime TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+)
 `)
 	if err != nil {
 		panic(err)

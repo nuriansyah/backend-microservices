@@ -16,6 +16,7 @@ func main() {
 
 	mhsRepo := repository.NewMahasiswaRepository(db)
 	dosenRepo := repository.NewDosenRepository(db)
-	mainAPI := api.NewAPi(*mhsRepo, *dosenRepo)
+	logRepo := repository.NewLogRepository(db)
+	mainAPI := api.NewAPi(*mhsRepo, *dosenRepo, *logRepo)
 	mainAPI.Start()
 }

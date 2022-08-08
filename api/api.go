@@ -9,14 +9,16 @@ import (
 type API struct {
 	mhsRepo   repository.MahasiswaRepository
 	dosenRepo repository.DosenRepository
+	logRepo   repository.LogRepository
 	router    *gin.Engine
 }
 
-func NewAPi(mhsRepo repository.MahasiswaRepository, dosenRepo repository.DosenRepository) API {
+func NewAPi(mhsRepo repository.MahasiswaRepository, dosenRepo repository.DosenRepository, logRepo repository.LogRepository) API {
 	router := gin.Default()
 	api := API{
 		mhsRepo:   mhsRepo,
 		dosenRepo: dosenRepo,
+		logRepo:   logRepo,
 		router:    router,
 	}
 
