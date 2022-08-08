@@ -15,7 +15,7 @@ func NewDosenRepository(db *sql.DB) *DosenRepository {
 }
 
 func (u *DosenRepository) Login(email string, password string) (*int, error) {
-	statement := "SELECT id,email,password,is_logged_in  FROM dosen WHERE email = ?"
+	statement := "SELECT id,email,password  FROM dosen WHERE email = ?"
 	res := u.db.QueryRow(statement, email, password)
 	var hashedPassword string
 	var id int
@@ -23,7 +23,6 @@ func (u *DosenRepository) Login(email string, password string) (*int, error) {
 	if bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password)) != nil {
 		return nil, errors.New("Login Failed")
 	}
-	statement = "UPDATE user SET is_logged_in = 1 WHERE id = ?"
 
 	_, err := u.db.Exec(statement, id)
 	if err != nil {
@@ -52,5 +51,15 @@ func (u *DosenRepository) CheckEmail(email string) (bool, error) {
 func (u *DosenRepository) UpdateAvatar(userId int, filepath string) error {
 	statement := "UPDATE dosen SET avatar = ? WHERE id = ?"
 	_, err := u.db.Exec(statement, filepath, userId)
+	return err
+}
+
+func (u *DosenRepository) UpdateDataDosen(id int, name string) error {
+	statement := "UPDATE dosen SET name = ? WHERE id = ?"
+	_, err := u.GetUserData(id)
+	if err != nil {
+		return err
+	}
+	_, err = u.db.Exec(statement, name, id)
 	return err
 }
