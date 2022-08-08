@@ -65,7 +65,7 @@ func (u *DosenRepository) UpdateDataDosen(id int, name string) error {
 	_, err = u.db.Exec(statement, name, id)
 	return err
 }
-func (u *DosenRepository) Register(name, email, password string) (userId int, responseCode int, err error) {
+func (u *DosenRepository) Insert(name, email, password string) (userId int, responseCode int, err error) {
 	isAvailble, err := u.CheckEmail(email)
 	if err != nil {
 		return -1, http.StatusBadRequest, err

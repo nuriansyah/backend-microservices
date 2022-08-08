@@ -6,6 +6,8 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"net/http"
 	"regexp"
+
+	_ "github.com/mattn/go-sqlite3"
 )
 
 type MahasiswaRepository struct {
@@ -17,7 +19,7 @@ func NewMahasiswaRepository(db *sql.DB) *MahasiswaRepository {
 }
 
 func (u *MahasiswaRepository) Login(email string, password string) (*int, error) {
-	statement := "SELECT id,email,password  FROM users WHERE email = ?"
+	statement := "SELECT id,password  FROM mahasiswa WHERE email = ?"
 	res := u.db.QueryRow(statement, email, password)
 	var hashedPassword string
 	var id int
@@ -66,7 +68,7 @@ func (u *MahasiswaRepository) UpdateDataMahasiswa(id int, name string) error {
 	return err
 }
 
-func (u *MahasiswaRepository) Register(name, email, password string) (userId int, responseCode int, err error) {
+func (u *MahasiswaRepository) Insert(name, email, password string) (userId int, responseCode int, err error) {
 	isAvailble, err := u.CheckEmail(email)
 	if err != nil {
 		return -1, http.StatusBadRequest, err
@@ -83,17 +85,14 @@ func (u *MahasiswaRepository) Register(name, email, password string) (userId int
 		return -1, http.StatusBadRequest, errors.New("invalid email")
 	}
 	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-	sqlStmt := "INSERT mahasiswa INTO (name,email,password) VALUES (?,?,?)"
-	res, err := u.db.Exec(sqlStmt, name, hashedPassword)
+	sqlStmt := "INSERT INTO mahasiswa (name,email,password) VALUES (?,?,?)"
+	res, err := u.db.Exec(sqlStmt, name, email, hashedPassword)
 	if err != nil {
-		return -1, http.StatusInternalServerError, err
-	}
-	if err != nil {
-		return -1, http.StatusInternalServerError, err
+		return -1, http.StatusInternalServerError, errors.New("Invalid ID")
 	}
 	resId, err := res.LastInsertId()
 	if err != nil {
-		return -1, http.StatusInternalServerError, err
+		return -1, http.StatusInternalServerError, errors.New("Invalid ID")
 	}
 	return int(resId), http.StatusOK, err
 }

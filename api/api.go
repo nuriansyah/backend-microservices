@@ -27,6 +27,7 @@ func NewAPi(mhsRepo repository.MahasiswaRepository, dosenRepo repository.DosenRe
 	router.Use(cors.New(config))
 
 	router.POST("/login", api.login)
+	router.POST("/register", api.register)
 
 	return api
 

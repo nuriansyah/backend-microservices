@@ -16,6 +16,16 @@ type LoginSuccessResponse struct {
 	Token string `json:"token"`
 }
 
+type RegisterReqBody struct {
+	Name     string `json:"name" binding:"required"`
+	Email    string `json:"email" binding:"required"`
+	Password string `json:"password" binding:"required"`
+}
+type RegisterSuccessResponse struct {
+	Message string `json:"message"`
+	Token   string `json:"token"`
+}
+
 var jwtKey = []byte("key")
 
 type Claims struct {
@@ -62,6 +72,26 @@ func (api *API) getUserIdFromToken(c *gin.Context) (int, error) {
 		return -1, errors.New("Invalid Tokens")
 	}
 }
+func (api *API) register(c *gin.Context) {
+	var input RegisterReqBody
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	userId, responseCode, err := api.mhsRepo.Insert(input.Name, input.Email, input.Password)
+	if err != nil {
+		c.AbortWithStatusJSON(responseCode, gin.H{"error": err.Error()})
+		return
+	}
+
+	tokenString, err := api.genereteJWT(&userId)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, RegisterSuccessResponse{Message: "success", Token: tokenString})
+}
 
 func (api *API) login(c *gin.Context) {
 	var loginReq LoginReqBody
@@ -80,12 +110,12 @@ func (api *API) login(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	dosenId, err := api.dosenRepo.Login(loginReq.Email, loginReq.Password)
-	if err != nil {
-		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
-		return
-	}
-	tokenString, err = api.genereteJWT(dosenId)
+	//dosenId, err := api.dosenRepo.Login(loginReq.Email, loginReq.Password)
+	//if err != nil {
+	//	c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+	//	return
+	//}
+	//tokenString, err = api.genereteJWT(dosenId)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
