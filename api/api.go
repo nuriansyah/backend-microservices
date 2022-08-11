@@ -31,6 +31,12 @@ func NewAPi(mhsRepo repository.MahasiswaRepository, dosenRepo repository.DosenRe
 	router.POST("/login", api.login)
 	router.POST("/register", api.register)
 
+	logRouter := router.Group("/api/log", AuthMiddleware())
+	{
+		logRouter.POST("/", api.createPost)
+	}
+	router.Use()
+
 	return api
 
 }

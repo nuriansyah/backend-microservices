@@ -17,15 +17,19 @@ func Migrate(db *sql.DB) {
 );
 CREATE TABLE IF NOT EXISTS mahasiswa (
     id integer not null primary key AUTOINCREMENT,
+    dosen_id integer not null,
     name varchar(255) not null,
     email varchar(255) not null UNIQUE,
     password varchar(255) not null,
-	avatar varchar(255) null
+	avatar varchar(255) null,
+    FOREIGN KEY (dosen_id) REFERENCES dosen(id)
 );
 CREATE TABLE IF NOT EXISTS log (
     id integer not null primary key AUTOINCREMENT,
-	log varchar(255) not null,
-    sqltime TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+    mhs_id integer not null,
+	activity varchar(255) not null,
+    created_at datetime NOT NULL,
+	FOREIGN KEY (mhs_id) REFERENCES mahasiswa(id),
 )
 `)
 	if err != nil {
