@@ -19,8 +19,8 @@ type Log struct {
 	CreatedAt time.Time `db:"created_at"`
 }
 
-func (l *LogRepository) InsertLog(mhs_id int, activity, created_at string) (int64, error) {
-	sqlStmt := `INSERT INTO  log (mhs_id,log,created_at) VALUES (?,?,?);`
+func (l *LogRepository) InsertLog(mhs_id int, activity string) (int64, error) {
+	sqlStmt := `INSERT INTO  log (mhs_id,log) VALUES (?,?);`
 
 	tx, err := l.db.Begin()
 	if err != nil {
