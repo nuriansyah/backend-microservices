@@ -7,19 +7,17 @@ import (
 )
 
 type API struct {
-	mhsRepo   repository.MahasiswaRepository
-	dosenRepo repository.DosenRepository
-	logRepo   repository.LogRepository
-	router    *gin.Engine
+	userRepo repository.UserRepository
+	postRepo repository.PostRepository
+	router   *gin.Engine
 }
 
-func NewAPi(mhsRepo repository.MahasiswaRepository, dosenRepo repository.DosenRepository, logRepo repository.LogRepository) API {
+func NewAPi(userRepo repository.UserRepository, postRepo repository.PostRepository) API {
 	router := gin.Default()
 	api := API{
-		mhsRepo:   mhsRepo,
-		dosenRepo: dosenRepo,
-		logRepo:   logRepo,
-		router:    router,
+		userRepo: userRepo,
+		postRepo: postRepo,
+		router:   router,
 	}
 
 	config := cors.DefaultConfig()
@@ -31,9 +29,10 @@ func NewAPi(mhsRepo repository.MahasiswaRepository, dosenRepo repository.DosenRe
 	router.POST("/login", api.login)
 	router.POST("/register", api.register)
 
-	logRouter := router.Group("/api/log", AuthMiddleware())
+	router.GET("/api/post/:id", api.readPost)
+	postRouter := router.Group("/api/post", AuthMiddleware())
 	{
-		logRouter.POST("/", api.createPost)
+		postRouter.POST("/", api.createPost)
 	}
 	router.Use()
 
