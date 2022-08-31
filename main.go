@@ -14,9 +14,9 @@ func main() {
 		panic(err)
 	}
 
-	mhsRepo := repository.NewMahasiswaRepository(db)
-	dosenRepo := repository.NewDosenRepository(db)
-	logRepo := repository.NewLogRepository(db)
-	mainAPI := api.NewAPi(*mhsRepo, *dosenRepo, *logRepo)
+	userRepo := repository.NewUserRepository(db)
+	postRepo := repository.NewPostRepository(db)
+
+	mainAPI := api.NewAPi(*userRepo, *postRepo)
 	mainAPI.Start()
 }
