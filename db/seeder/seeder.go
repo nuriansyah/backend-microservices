@@ -7,19 +7,29 @@ import (
 
 func Seed(db *sql.DB) {
 	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte("password"), bcrypt.DefaultCost)
-	_, err := db.Exec("INSERT INTO mahasiswa (id,name, email, password,dosen_id) VALUES (1,'Radit', 'resradit@gmail.com', ?, 'mahasiswa',$1)", hashedPassword)
+	rowUserMahasiswa, err := db.Exec("INSERT INTO users (name, email, password, role) VALUES ('Radit', 'resradit@gmail.com', ?, 'mahasiswa')", hashedPassword)
 	if err != nil {
 		panic(err)
 	}
 
-	_, err = db.Exec("INSERT INTO dosen (id,name, email, password) VALUES (1,'Dadang', 'dadang@gmail.com', ?, 'mahasiswa')", hashedPassword)
+	userMahasiswaId, err := rowUserMahasiswa.LastInsertId()
 	if err != nil {
 		panic(err)
 	}
 
-	_, err = db.Exec("INSERT INTO log (mhs_,id,activity,created_at) VALUES ($2,`activity day1`,datetime(`now`)) ")
+	db.Exec("INSERT INTO user_details (user_id, nrp, prodi, program, company, batch) VALUES (?,'183040067','Informatika', 'MSIB', 'Binar Academy', 2019)", userMahasiswaId)
+
+	// User Siswa
+	rowUserDosen, err := db.Exec("INSERT INTO users (name, email, password, role) VALUES ('Dosen A', 'dosena@gmail.com', ?, 'dosen')", hashedPassword)
 	if err != nil {
 		panic(err)
 	}
+
+	userDosenId, err := rowUserDosen.LastInsertId()
+	if err != nil {
+		panic(err)
+	}
+
+	db.Exec("INSERT INTO user_details (user_id) VALUES (?)", userDosenId)
 
 }

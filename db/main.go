@@ -5,11 +5,11 @@ import (
 
 	"github.com/nuriansyah/log-mbkm-unpas/db/migration"
 
-	_ "github.com/mattn/go-sqlite3"
+	_ "github.com/lib/pq"
 )
 
 func main() {
-	db, err := sql.Open("sqlite3", "./basis-app.db")
+	db, err := sql.Open("postgres", "postgres://localhost:5432/database?sslmode=disable")
 	if err != nil {
 		panic(err)
 	}

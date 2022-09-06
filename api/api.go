@@ -1,25 +1,24 @@
 package api
 
 import (
+	"fmt"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/nuriansyah/log-mbkm-unpas/repository"
+	"time"
 )
 
 type API struct {
-	mhsRepo   repository.MahasiswaRepository
-	dosenRepo repository.DosenRepository
-	logRepo   repository.LogRepository
-	router    *gin.Engine
+	userRepo repository.UserRepository
+	//postRepo repository.PostRepository
+	router *gin.Engine
 }
 
-func NewAPi(mhsRepo repository.MahasiswaRepository, dosenRepo repository.DosenRepository, logRepo repository.LogRepository) API {
+func NewAPi(userRepo repository.UserRepository) API {
 	router := gin.Default()
 	api := API{
-		mhsRepo:   mhsRepo,
-		dosenRepo: dosenRepo,
-		logRepo:   logRepo,
-		router:    router,
+		userRepo: userRepo,
+		router:   router,
 	}
 
 	config := cors.DefaultConfig()
@@ -31,11 +30,31 @@ func NewAPi(mhsRepo repository.MahasiswaRepository, dosenRepo repository.DosenRe
 	router.POST("/login", api.login)
 	router.POST("/register", api.register)
 
-	logRouter := router.Group("/api/log", AuthMiddleware())
+	//router.GET("/api/post/:id", api.readPost)
+	//postRouter := router.Group("/api/post", AuthMiddleware())
+	//{
+	//	postRouter.POST("/", api.createPost)
+	//}
+	profileRouter := router.Group("/api/profile", AuthMiddleware())
 	{
-		logRouter.POST("/", api.createPost)
+		profileRouter.GET("/", api.getProfile)
+		profileRouter.PATCH("/", api.updateProfile)
+		//profileRouter.PUT("/avatar", api.changeAvatar)
 	}
-	router.Use()
+	router.Use(gin.LoggerWithFormatter(func(param gin.LogFormatterParams) string {
+		return fmt.Sprintf("%s - [%s] \"%s %s %s %d %s \"%s\" %s\"\n",
+			param.ClientIP,
+			param.TimeStamp.Format(time.RFC1123),
+			param.Method,
+			param.Path,
+			param.Request.Proto,
+			param.StatusCode,
+			param.Latency,
+			param.Request.UserAgent(),
+			param.ErrorMessage,
+		)
+	}))
+	router.Use(gin.Recovery())
 
 	return api
 
@@ -47,4 +66,8 @@ func (api *API) Handler() *gin.Engine {
 
 func (api *API) Start() {
 	api.Handler().Run()
+}
+
+func (api *API) logUser() {
+
 }

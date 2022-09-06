@@ -1,0 +1,25 @@
+version: "3"
+
+services:
+  ta-postgres:
+    image: postgres
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=secret
+      - POSTGRES_DB=log
+    volumes:
+      -
+  ta-backend:
+    build: ./main
+    ports:
+      - 8080:8080
+    environment:
+      - DB_USER=postgres
+      - DB_PASSWORD=rahasia
+      - DB_HOST=todo-postgres
+      - DB_PORT=5432
+      - DB_DATABASE=log
+    depends_on:
+      - todo-postgres
