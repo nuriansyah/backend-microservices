@@ -92,7 +92,7 @@ func (u *UserRepository) GetUserData(id int) (*User, error) {
 	return &user, err
 }
 func (u *UserRepository) UpdateDetailDataUser(userID, batch int, nrp, prodi, program, company string) error {
-	sqlStmt := `UPDATE user_details SET nrp = ?,prodi = ?,program = ?,company = ?,batch = ? WHERE user_details = ?`
+	sqlStmt := `UPDATE user_details SET nrp = ?,prodi = ?,program = ?,company = ?,batch = ? WHERE user_id = ?`
 	tx, err := u.db.DB.Begin()
 	if err != nil {
 		return err

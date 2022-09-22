@@ -30,6 +30,7 @@ func main() {
 	//}
 
 	userRepo := repository.NewUserRepository(dbPostgres)
+	//postsRepo := repository.NewPostRepository(dbPostgres)
 	mainAPI := api.NewAPi(*userRepo)
 	mainAPI.Start()
 }
