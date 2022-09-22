@@ -3,11 +3,30 @@ package src
 import (
 	"database/sql"
 	"fmt"
+	_ "github.com/lib/pq"
 	"os"
 )
 
 type Config struct {
 	DB *sql.DB
+}
+
+func ConnectPostgres() (*Config, error) {
+	connStr, err := loadPostgresConfig()
+	if err != nil {
+		return nil, err
+	}
+
+	db, err := sql.Open("postgres", connStr)
+	if err != nil {
+		return nil, err
+	}
+
+	err = db.Ping()
+	if err != nil {
+		return nil, err
+	}
+	return &Config{db}, nil
 }
 
 func loadPostgresConfig() (string, error) {
@@ -34,4 +53,7 @@ func loadPostgresConfig() (string, error) {
 		os.Getenv("DB_DATABASE"),
 	)
 	return connStr, nil
+}
+func (p *Config) Close() {
+	p.DB.Close()
 }

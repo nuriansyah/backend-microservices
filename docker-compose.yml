@@ -11,13 +11,19 @@ services:
       - POSTGRES_DB=log
     volumes:
       -
+  migratiom:
+    image: migrate/migrate
+    volumes:
+      - .:/migrations
+    command:
+      -
   ta-backend:
     build: ./main
     ports:
       - 8080:8080
     environment:
       - DB_USER=postgres
-      - DB_PASSWORD=rahasia
+      - DB_PASSWORD=secret
       - DB_HOST=todo-postgres
       - DB_PORT=5432
       - DB_DATABASE=log
