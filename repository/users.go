@@ -40,7 +40,7 @@ func (u *UserRepository) GetUserRole(id int) (*string, error) {
 }
 
 func (u *UserRepository) CheckEmail(email string) (bool, error) {
-	sqlStatement := "SELECT count(*) FROM users WHERE email =?"
+	sqlStatement := "SELECT count(*) FROM users WHERE email = ?"
 	res := u.db.QueryRow(sqlStatement, email)
 	var count int
 	err := res.Scan(&count)
