@@ -1,29 +1,47 @@
-version: "3"
-
+version: '3.9'
 services:
-  ta-postgres:
-    image: postgres
-    ports:
-      - 5432:5432
+  app:
+    container_name: golang_container
     environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=secret
-      - POSTGRES_DB=log
-    volumes:
-      -
-  migratiom:
-    image: migrate/migrate
-    volumes:
-      - .:/migrations
-    command:
-      -
-  ta-backend:
-    build: ./main
+      - DB_USER=roots
+      - DB_PASSWORD=secret
+      - DB_HOST=postgresdb
+      - DB_PORT=5432
+      - DB_DATABASE=log_km
+    tty: true
+    build: .
     ports:
-      - 8080:8080
+      - 8000:8080
+    restart: on-failure
+    volumes:
+      - .:/app
+    depends_on:
+      - postgresdb
+    networks:
+      - learning
+
+  postgresdb:
+    image: postgres:latest
+    container_name: postgres_container
     environment:
       - DB_USER=postgres
-      - DB_PASSWORD=secret
+      - DB_PASSWORD=rahasia
       - DB_HOST=todo-postgres
       - DB_PORT=5432
-      - DB_DATABASE=log
+      - DB_DATABASE=belajar
+    ports:
+      - '1234:5432'
+    volumes:
+      - ./pg_data:/var/lib/postgresql/data
+    networks:
+      - learning
+
+
+volumes:
+  pg_data:
+
+
+# Networks to be created to facilitate communication between containers
+networks:
+  learning:
+    driver: bridge

@@ -8,7 +8,7 @@ import (
 )
 
 type Config struct {
-	DB *sql.DB
+	*sql.DB
 }
 
 func ConnectPostgres() (*Config, error) {
@@ -55,5 +55,5 @@ func loadPostgresConfig() (string, error) {
 	return connStr, nil
 }
 func (p *Config) Close() {
-	p.DB.Close()
+	p.Close()
 }

@@ -10,14 +10,15 @@ import (
 
 type API struct {
 	userRepo repository.UserRepository
-	//postRepo repository.PostRepository
-	router *gin.Engine
+	postRepo repository.PostRepository
+	router   *gin.Engine
 }
 
-func NewAPi(userRepo repository.UserRepository) API {
+func NewAPi(userRepo repository.UserRepository, postRepo repository.PostRepository) API {
 	router := gin.Default()
 	api := API{
 		userRepo: userRepo,
+		postRepo: postRepo,
 		router:   router,
 	}
 
