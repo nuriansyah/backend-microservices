@@ -68,7 +68,3 @@ func (api *API) Handler() *gin.Engine {
 func (api *API) Start() {
 	api.Handler().Run()
 }
-
-func (api *API) logUser() {
-
-}

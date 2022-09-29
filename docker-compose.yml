@@ -3,7 +3,7 @@ services:
   app:
     container_name: golang_container
     environment:
-      - DB_USER=roots
+      - DB_USER=postgres
       - DB_PASSWORD=secret
       - DB_HOST=postgresdb
       - DB_PORT=5432
@@ -11,7 +11,7 @@ services:
     tty: true
     build: .
     ports:
-      - 8000:8080
+      - "8000:8080"
     restart: on-failure
     volumes:
       - .:/app
@@ -24,13 +24,12 @@ services:
     image: postgres:latest
     container_name: postgres_container
     environment:
-      - DB_USER=postgres
-      - DB_PASSWORD=rahasia
-      - DB_HOST=todo-postgres
-      - DB_PORT=5432
-      - DB_DATABASE=belajar
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=secret
+      - POSTGRES_DB=log_km
+      - DATABASE_HOST=postgresdb
     ports:
-      - '1234:5432'
+      - "1234:5432"
     volumes:
       - ./pg_data:/var/lib/postgresql/data
     networks:
