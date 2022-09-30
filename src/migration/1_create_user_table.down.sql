@@ -1,2 +1,2 @@
-DROP TABLE IF EXISTS users;
-DROP TABLE IF EXISTS user_details;
+DROP TABLE  users;
+DROP TABLE  user_details;
