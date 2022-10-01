@@ -36,9 +36,10 @@ func NewAPi(userRepo repository.UserRepository, postRepo repository.PostReposito
 	//{
 	//	postRouter.POST("/", api.createPost)
 	//}
+	router.GET("/users", api.getProfile)
 	profileRouter := router.Group("/api/profile", AuthMiddleware())
 	{
-		profileRouter.GET("/", api.getProfile)
+		//profileRouter.GET("/", api.getProfile)
 		profileRouter.PATCH("/", api.updateProfile)
 		//profileRouter.PUT("/avatar", api.changeAvatar)
 	}
@@ -53,6 +54,7 @@ func NewAPi(userRepo repository.UserRepository, postRepo repository.PostReposito
 			param.Latency,
 			param.Request.UserAgent(),
 			param.ErrorMessage,
+			param.Keys,
 		)
 	}))
 	router.Use(gin.Recovery())

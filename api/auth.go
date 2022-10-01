@@ -5,6 +5,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
+	"github.com/nuriansyah/log-mbkm-unpas/helper"
 	"net/http"
 	"time"
 )
@@ -19,13 +20,10 @@ type LoginSuccessResponse struct {
 }
 
 type RegisterReqBody struct {
-	Name     string  `json:"name" binding:"required"`
-	Email    string  `json:"email" binding:"required"`
-	Password string  `json:"password" binding:"required"`
-	Role     string  `json:"role" binding:"required,lowercase,oneof=dosen mahasiswa"`
-	Program  *string `json:"program" binding:"required_if=Role mahasiswa"`
-	Company  *string `json:"company" binding:"required_if=Role mahasiswa"`
-	Batch    *int    `json:"batch"`
+	Name     string `json:"name" binding:"required"`
+	Email    string `json:"email" binding:"required"`
+	Password string `json:"password" binding:"required"`
+	Role     string `json:"role" binding:"required,lowercase,oneof=dosen mahasiswa"`
 }
 type RegisterSuccessResponse struct {
 	Message string `json:"message"`
@@ -89,7 +87,7 @@ func (api *API) register(c *gin.Context) {
 		if errors.As(err, &ve) {
 			c.AbortWithStatusJSON(
 				http.StatusBadRequest,
-				gin.H{"errors": err},
+				gin.H{"errors": helper.GetErrorMessage(ve)},
 			)
 			return
 		} else {
@@ -97,7 +95,8 @@ func (api *API) register(c *gin.Context) {
 		}
 		return
 	}
-	userId, responseCode, err := api.userRepo.InserNewUser(input.Name, input.Password, input.Role, input.Password)
+
+	userId, responseCode, err := api.userRepo.InserNewUser(input.Name, input.Email, input.Role, input.Password)
 	if err != nil {
 		c.AbortWithStatusJSON(responseCode, gin.H{"error": err.Error()})
 		return
@@ -108,6 +107,7 @@ func (api *API) register(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+
 	c.JSON(http.StatusOK, RegisterSuccessResponse{Message: "success", Token: tokenString})
 }
 
@@ -120,7 +120,7 @@ func (api *API) login(c *gin.Context) {
 		if errors.As(err, &ve) {
 			c.AbortWithStatusJSON(
 				http.StatusBadRequest,
-				gin.H{"errors": err},
+				gin.H{"errors": helper.GetErrorMessage(ve)},
 			)
 		} else {
 			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
