@@ -4,8 +4,6 @@ import (
 	"errors"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
-	"github.com/go-playground/validator/v10"
-	"github.com/nuriansyah/log-mbkm-unpas/helper"
 	"net/http"
 	"time"
 )
@@ -33,26 +31,29 @@ type RegisterSuccessResponse struct {
 var jwtKey = []byte("key")
 
 type Claims struct {
-	id    int    `json:"id"`
-	email string `json:"email"`
-	role  string `json:"role"`
+	Id    int
+	Email string
+	Role  string
 	jwt.StandardClaims
 }
 
-func (api API) genereteJWT(userId *int, role *string) (string, error) {
-	expTime := time.Now().Add(60 * time.Minute)
-
-	claims := &Claims{
-		id:   *userId,
-		role: *role,
-		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: expTime.Unix(),
-		},
+func (api *API) getUserIdFromToken(c *gin.Context) (int, error) {
+	tokenString := c.GetHeader("Authorization")[(len("Bearer ")):]
+	claim := &Claims{}
+	token, err := jwt.ParseWithClaims(tokenString, claim, func(t *jwt.Token) (interface{}, error) {
+		return jwtKey, nil
+	})
+	if err != nil {
+		return -1, err
 	}
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	//tokenString, err := token.SigningString()
-	tokenString, err := token.SignedString(jwtKey)
-	return tokenString, err
+
+	if token.Valid {
+		claim := token.Claims.(*Claims)
+		return claim.Id, nil
+
+	} else {
+		return -1, errors.New("invalid token")
+	}
 }
 
 func ValidateToken(tokenString string) (*jwt.Token, error) {
@@ -62,39 +63,41 @@ func ValidateToken(tokenString string) (*jwt.Token, error) {
 	})
 	return token, err
 }
-func (api *API) getUserIdFromToken(c *gin.Context) (int, error) {
-	tokenString := c.GetHeader("Authorization")[(len("Bearer ")):]
-	claim := &Claims{}
-	token, err := jwt.ParseWithClaims(tokenString, claim, func(token *jwt.Token) (interface{}, error) {
-		return jwtKey, nil
-	})
-	if err != nil {
-		return -1, err
+
+func (api API) generateJWT(userId *int, role *string) (string, error) {
+	expTime := time.Now().Add(60 * time.Minute)
+
+	claims := &Claims{
+		Id:   *userId,
+		Role: *role,
+		StandardClaims: jwt.StandardClaims{
+			ExpiresAt: expTime.Unix(),
+		},
 	}
-	if token.Valid {
-		claim := token.Claims.(*Claims)
-		return claim.id, nil
-	} else {
-		return -1, errors.New("Invalid Tokens")
-	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+
+	tokenString, err := token.SignedString(jwtKey)
+	return tokenString, err
 }
+
 func (api *API) register(c *gin.Context) {
 	var input RegisterReqBody
 	err := c.BindJSON(&input)
-	var ve validator.ValidationErrors
-
-	if err != nil {
-		if errors.As(err, &ve) {
-			c.AbortWithStatusJSON(
-				http.StatusBadRequest,
-				gin.H{"errors": helper.GetErrorMessage(ve)},
-			)
-			return
-		} else {
-			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		}
-		return
-	}
+	//var ve validator.ValidationErrors
+	//
+	//if err != nil {
+	//	if errors.As(err, &ve) {
+	//		c.AbortWithStatusJSON(
+	//			http.StatusBadRequest,
+	//			gin.H{"errors": helper.GetErrorMessage(ve)},
+	//		)
+	//		return
+	//	} else {
+	//		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	//	}
+	//	return
+	//}
 
 	userId, responseCode, err := api.userRepo.InsertUser(input.Name, input.Email, input.Password, input.Role)
 	if err != nil {
@@ -102,7 +105,7 @@ func (api *API) register(c *gin.Context) {
 		return
 	}
 
-	tokenString, err := api.genereteJWT(&userId, &input.Role)
+	tokenString, err := api.generateJWT(&userId, &input.Role)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -114,19 +117,19 @@ func (api *API) register(c *gin.Context) {
 func (api *API) login(c *gin.Context) {
 	var loginReq LoginReqBody
 	err := c.BindJSON(&loginReq)
-	var ve validator.ValidationErrors
-
-	if err != nil {
-		if errors.As(err, &ve) {
-			c.AbortWithStatusJSON(
-				http.StatusBadRequest,
-				gin.H{"errors": helper.GetErrorMessage(ve)},
-			)
-		} else {
-			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		}
-		return
-	}
+	//var ve validator.ValidationErrors
+	//
+	//if err != nil {
+	//	if errors.As(err, &ve) {
+	//		c.AbortWithStatusJSON(
+	//			http.StatusBadRequest,
+	//			gin.H{"errors": helper.GetErrorMessage(ve)},
+	//		)
+	//	} else {
+	//		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	//	}
+	//	return
+	//}
 
 	userId, err := api.userRepo.Login(loginReq.Email, loginReq.Password)
 	if err != nil {
@@ -140,7 +143,7 @@ func (api *API) login(c *gin.Context) {
 		return
 	}
 
-	tokenString, err := api.genereteJWT(userId, role)
+	tokenString, err := api.generateJWT(userId, role)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

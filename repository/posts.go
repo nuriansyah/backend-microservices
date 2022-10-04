@@ -3,15 +3,14 @@ package repository
 import (
 	"database/sql"
 	"errors"
-	"github.com/nuriansyah/log-mbkm-unpas/src"
 	"time"
 )
 
 type PostRepository struct {
-	db *src.Config
+	db *sql.DB
 }
 
-func NewPostRepository(db *src.Config) *PostRepository {
+func NewPostRepository(db *sql.DB) *PostRepository {
 	return &PostRepository{
 		db: db,
 	}

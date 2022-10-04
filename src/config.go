@@ -8,16 +8,16 @@ import (
 )
 
 type Config struct {
-	*sql.DB
+	DB *sql.DB
 }
 
-func ConnectPostgres() (*Config, error) {
+func ConnectPostgres() (db *sql.DB, err error) {
 	connStr, err := loadPostgresConfig()
 	if err != nil {
 		return nil, err
 	}
 
-	db, err := sql.Open("postgres", connStr)
+	db, err = sql.Open("postgres", connStr)
 	if err != nil {
 		return nil, err
 	}
@@ -26,7 +26,7 @@ func ConnectPostgres() (*Config, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Config{db}, nil
+	return db, err
 }
 
 func loadPostgresConfig() (string, error) {
@@ -55,5 +55,5 @@ func loadPostgresConfig() (string, error) {
 	return connStr, nil
 }
 func (p *Config) Close() {
-	p.Close()
+	p.DB.Close()
 }

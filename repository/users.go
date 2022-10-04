@@ -1,8 +1,8 @@
 package repository
 
 import (
+	"database/sql"
 	"errors"
-	"github.com/nuriansyah/log-mbkm-unpas/src"
 	"golang.org/x/crypto/bcrypt"
 	"net/http"
 	"regexp"
@@ -12,29 +12,28 @@ import (
 )
 
 type UserRepository struct {
-	db *src.Config
+	db *sql.DB
 }
 
-func NewUserRepository(db *src.Config) *UserRepository {
+func NewUserRepository(db *sql.DB) *UserRepository {
 	return &UserRepository{
 		db: db,
 	}
 }
 
 func (u *UserRepository) Login(email, password string) (*int, error) {
-	sqlStatement := "SELECT id,email,password FROM users WHERE id = $1"
+	sqlStatement := "SELECT id, password FROM users WHERE email = $1"
 	res := u.db.QueryRow(sqlStatement, email, password)
-
 	var hashedPassword string
 	var id int
 	res.Scan(&id, &hashedPassword)
 	if bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password)) != nil {
-		return nil, errors.New("Login failed")
+		return nil, errors.New("Login Failed")
 	}
 	return &id, nil
 }
 func (u *UserRepository) CheckEmail(email string) (bool, error) {
-	sqlStatement := "SELECT count(*) FROM users WHERE email =$1"
+	sqlStatement := "SELECT count(*) FROM users WHERE email = $1"
 	res := u.db.QueryRow(sqlStatement, email)
 	var count int
 	err := res.Scan(&count)
@@ -85,6 +84,7 @@ func (u *UserRepository) InsertNewUser(name, email, role, password string) (user
 	}
 	return int(resId), http.StatusCreated, err
 }
+
 func (u *UserRepository) GetUserData(id int) (*User, error) {
 	statement := `SELECT users.id, name, email, role,nrp,prodi, avatar, company, program, batch FROM user_details JOIN users ON users.id = user_details.user_id WHERE users.id = $1`
 	var user User
@@ -136,9 +136,20 @@ func (u *UserRepository) InsertUser(name, email, password, role string) (userId,
 
 	sqlStatement := `INSERT INTO users (name,email,password,role) VALUES ($1,$2,$3,$4) RETURNING id`
 
-	if err := u.db.QueryRow(sqlStatement, name, email, hashedPassword, strings.ToLower(role)).Scan(userId); err != nil {
-		panic(err)
-	}
+	var id int
+	err = u.db.QueryRow(sqlStatement, name, email, hashedPassword, strings.ToLower(role)).Scan(&id)
+
+	//stmt, err := u.db.Prepare(sqlStatement)
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
+	//defer stmt.Close()
+	//
+	//var id int
+	//err = stmt.QueryRow(name, email, hashedPassword, role).Scan(&id)
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
 
 	return userId, http.StatusOK, err
 }
