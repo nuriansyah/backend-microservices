@@ -51,10 +51,11 @@ func (u *UserRepository) GetUserRole(id int) (*string, error) {
 	return &role, err
 }
 
-func (u *UserRepository) InserNewUser(name, email, role, password string) (usersId int, responCode int, err error) {
+func (u *UserRepository) InsertNewUser(name, email, role, password string) (usersId int, responCode int, err error) {
 	if strings.ToLower(role) != "mahasiswa" && strings.ToLower(role) != "dosen" {
 		return -1, http.StatusBadRequest, errors.New("role must to be mahasiswa or dosen")
 	}
+
 	isAvailable, err := u.CheckEmail(email)
 	if err != nil {
 		return -1, http.StatusBadRequest, err
@@ -107,4 +108,37 @@ func (u *UserRepository) UpdateDetailDataUser(userID, batch int, nrp, prodi, pro
 		return err
 	}
 	return nil
+}
+
+func (u *UserRepository) InsertUser(name, email, password, role string) (userId, responCode int, err error) {
+	if strings.ToLower(role) != "mahasiswa" && strings.ToLower(role) != "siswa" {
+		return -1, http.StatusBadRequest, errors.New("role must be either 'mahasiswa' or 'siswa'")
+	}
+
+	isAvailable, err := u.CheckEmail(email)
+	if err != nil {
+		return -1, http.StatusBadRequest, err
+	}
+
+	if !isAvailable {
+		return -1, http.StatusBadRequest, errors.New("email has been used")
+	}
+	regex, err := regexp.Compile("^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$")
+	if err != nil {
+		return -1, http.StatusInternalServerError, err
+	}
+
+	isValid := regex.Match([]byte(email))
+	if !isValid {
+		return -1, http.StatusBadRequest, errors.New("invalid email")
+	}
+	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+
+	sqlStatement := `INSERT INTO users (name,email,password,role) VALUES ($1,$2,$3,$4) RETURNING id`
+
+	if err := u.db.QueryRow(sqlStatement, name, email, hashedPassword, strings.ToLower(role)).Scan(userId); err != nil {
+		panic(err)
+	}
+
+	return userId, http.StatusOK, err
 }

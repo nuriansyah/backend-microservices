@@ -96,7 +96,7 @@ func (api *API) register(c *gin.Context) {
 		return
 	}
 
-	userId, responseCode, err := api.userRepo.InserNewUser(input.Name, input.Email, input.Role, input.Password)
+	userId, responseCode, err := api.userRepo.InsertUser(input.Name, input.Email, input.Password, input.Role)
 	if err != nil {
 		c.AbortWithStatusJSON(responseCode, gin.H{"error": err.Error()})
 		return
