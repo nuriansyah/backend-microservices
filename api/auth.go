@@ -4,6 +4,8 @@ import (
 	"errors"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
+	"github.com/nuriansyah/log-mbkm-unpas/helper"
 	"net/http"
 	"time"
 )
@@ -84,20 +86,20 @@ func (api API) generateJWT(userId *int, role *string) (string, error) {
 func (api *API) register(c *gin.Context) {
 	var input RegisterReqBody
 	err := c.BindJSON(&input)
-	//var ve validator.ValidationErrors
-	//
-	//if err != nil {
-	//	if errors.As(err, &ve) {
-	//		c.AbortWithStatusJSON(
-	//			http.StatusBadRequest,
-	//			gin.H{"errors": helper.GetErrorMessage(ve)},
-	//		)
-	//		return
-	//	} else {
-	//		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-	//	}
-	//	return
-	//}
+	var ve validator.ValidationErrors
+
+	if err != nil {
+		if errors.As(err, &ve) {
+			c.AbortWithStatusJSON(
+				http.StatusBadRequest,
+				gin.H{"errors": helper.GetErrorMessage(ve)},
+			)
+			return
+		} else {
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		}
+		return
+	}
 
 	userId, responseCode, err := api.userRepo.InsertUser(input.Name, input.Email, input.Password, input.Role)
 	if err != nil {
@@ -117,19 +119,19 @@ func (api *API) register(c *gin.Context) {
 func (api *API) login(c *gin.Context) {
 	var loginReq LoginReqBody
 	err := c.BindJSON(&loginReq)
-	//var ve validator.ValidationErrors
-	//
-	//if err != nil {
-	//	if errors.As(err, &ve) {
-	//		c.AbortWithStatusJSON(
-	//			http.StatusBadRequest,
-	//			gin.H{"errors": helper.GetErrorMessage(ve)},
-	//		)
-	//	} else {
-	//		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-	//	}
-	//	return
-	//}
+	var ve validator.ValidationErrors
+
+	if err != nil {
+		if errors.As(err, &ve) {
+			c.AbortWithStatusJSON(
+				http.StatusBadRequest,
+				gin.H{"errors": helper.GetErrorMessage(ve)},
+			)
+		} else {
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		}
+		return
+	}
 
 	userId, err := api.userRepo.Login(loginReq.Email, loginReq.Password)
 	if err != nil {

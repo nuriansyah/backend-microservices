@@ -3,6 +3,7 @@ package repository
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 	"golang.org/x/crypto/bcrypt"
 	"net/http"
 	"regexp"
@@ -21,14 +22,38 @@ func NewUserRepository(db *sql.DB) *UserRepository {
 	}
 }
 
+/*
+ouh i just noticed, this not how to use bcrypt.CompareHashAndPassword
+it return an error, you need to check if its type of bcrypt.ErrMismatchedHashAndPassword
+func main() {
+    p, _ := bcrypt.GenerateFromPassword([]byte("abc"), bcrypt.DefaultCost)
+    err := bcrypt.CompareHashAndPassword(p, []byte("abc"))
+    if err != nil {
+        // check if error is type of password missmatch
+        if errors.Is(err, bcrypt.ErrMismatchedHashAndPassword) {
+            fmt.Println("wrong password")
+            return
+        }
+        // panic on other error
+        panic(err)
+    }
+    fmt.Println("wellcome")
+}
+*/
+
 func (u *UserRepository) Login(email, password string) (*int, error) {
 	sqlStatement := "SELECT id, password FROM users WHERE email = $1"
 	res := u.db.QueryRow(sqlStatement, email, password)
 	var hashedPassword string
 	var id int
 	res.Scan(&id, &hashedPassword)
-	if bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password)) != nil {
-		return nil, errors.New("Login Failed")
+	err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
+	if err != nil {
+		if errors.Is(err, bcrypt.ErrMismatchedHashAndPassword) {
+			fmt.Println("Wrong Passowrd")
+			return nil, err
+		}
+		panic(err)
 	}
 	return &id, nil
 }
@@ -48,41 +73,6 @@ func (u *UserRepository) GetUserRole(id int) (*string, error) {
 	res := u.db.QueryRow(statement, id)
 	err := res.Scan(&role)
 	return &role, err
-}
-
-func (u *UserRepository) InsertNewUser(name, email, role, password string) (usersId int, responCode int, err error) {
-	if strings.ToLower(role) != "mahasiswa" && strings.ToLower(role) != "dosen" {
-		return -1, http.StatusBadRequest, errors.New("role must to be mahasiswa or dosen")
-	}
-
-	isAvailable, err := u.CheckEmail(email)
-	if err != nil {
-		return -1, http.StatusBadRequest, err
-	}
-
-	if !isAvailable {
-		return -1, http.StatusBadRequest, errors.New("email has been used")
-	}
-	regex, err := regexp.Compile("^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$")
-	if err != nil {
-		return -1, http.StatusInternalServerError, err
-	}
-
-	isValid := regex.Match([]byte(email))
-	if !isValid {
-		return -1, http.StatusBadRequest, errors.New("invalid email")
-	}
-	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-	sqlStetament := `INSERT INTO users (name,email,role,password) VALUES ($1,$2,$3,$4) `
-	res, err := u.db.Exec(sqlStetament, name, email, strings.ToLower(role), hashedPassword)
-	if err != nil {
-		return -1, http.StatusBadRequest, err
-	}
-	resId, err := res.LastInsertId()
-	if err != nil {
-		return -1, http.StatusBadRequest, err
-	}
-	return int(resId), http.StatusCreated, err
 }
 
 func (u *UserRepository) GetUserData(id int) (*User, error) {
@@ -134,10 +124,14 @@ func (u *UserRepository) InsertUser(name, email, password, role string) (userId,
 	}
 	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 
+	s := string([]byte(hashedPassword))
+	println(s)
+
+	println(&hashedPassword)
 	sqlStatement := `INSERT INTO users (name,email,password,role) VALUES ($1,$2,$3,$4) RETURNING id`
 
 	var id int
-	err = u.db.QueryRow(sqlStatement, name, email, hashedPassword, strings.ToLower(role)).Scan(&id)
+	err = u.db.QueryRow(sqlStatement, name, email, string(hashedPassword), strings.ToLower(role)).Scan(&id)
 
 	//stmt, err := u.db.Prepare(sqlStatement)
 	//if err != nil {
