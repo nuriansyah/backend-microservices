@@ -1,9 +1,11 @@
 package api
 
 import (
+	"fmt"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/nuriansyah/log-mbkm-unpas/repository"
+	"time"
 )
 
 type API struct {
@@ -29,12 +31,33 @@ func NewAPi(userRepo repository.UserRepository, postRepo repository.PostReposito
 	router.POST("/login", api.login)
 	router.POST("/register", api.register)
 
-	router.GET("/api/post/:id", api.readPost)
-	postRouter := router.Group("/api/post", AuthMiddleware())
+	//router.GET("/api/post/:id", api.readPost)
+	//postRouter := router.Group("/api/post", AuthMiddleware())
+	//{
+	//	postRouter.POST("/", api.createPost)
+	//}
+	router.GET("/users", api.getProfile)
+	profileRouter := router.Group("/api/profile", AuthMiddleware())
 	{
-		postRouter.POST("/", api.createPost)
+		//profileRouter.GET("/", api.getProfile)
+		profileRouter.PATCH("/", api.updateProfile)
+		//profileRouter.PUT("/avatar", api.changeAvatar)
 	}
-	router.Use()
+	router.Use(gin.LoggerWithFormatter(func(param gin.LogFormatterParams) string {
+		return fmt.Sprintf("%s - [%s] \"%s %s %s %d %s \"%s\" %s\"\n",
+			param.ClientIP,
+			param.TimeStamp.Format(time.RFC1123),
+			param.Method,
+			param.Path,
+			param.Request.Proto,
+			param.StatusCode,
+			param.Latency,
+			param.Request.UserAgent(),
+			param.ErrorMessage,
+			param.Keys,
+		)
+	}))
+	router.Use(gin.Recovery())
 
 	return api
 

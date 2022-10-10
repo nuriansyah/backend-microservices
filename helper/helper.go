@@ -29,7 +29,7 @@ func GetErrorMessage(ve validator.ValidationErrors) []JSONRequestErrorResponse {
 			requiredMessage := ""
 			for i < len(params) {
 				if i != 0 {
-					requiredMessage += "error the validate if "
+					requiredMessage += ", "
 				}
 				requiredMessage += fmt.Sprintf("%s is %s", strings.ToLower(params[i]), params[i+1])
 				i += 2

@@ -20,13 +20,10 @@ type LoginSuccessResponse struct {
 }
 
 type RegisterReqBody struct {
-	Name     string  `json:"name" binding:"required"`
-	Email    string  `json:"email" binding:"required"`
-	Password string  `json:"password" binding:"required"`
-	Role     string  `json:"role" binding:"required,lowercase,oneof=dosen mahasiswa"`
-	Program  *string `json:"program" binding:"required_if=Role mahasiswa"`
-	Company  *string `json:"company" binding:"required_if=Role mahasiswa"`
-	Batch    *int    `json:"batch"`
+	Name     string `json:"name" binding:"required"`
+	Email    string `json:"email" binding:"required"`
+	Password string `json:"password" binding:"required"`
+	Role     string `json:"role" binding:"required,lowercase,oneof=dosen mahasiswa"`
 }
 type RegisterSuccessResponse struct {
 	Message string `json:"message"`
@@ -36,26 +33,29 @@ type RegisterSuccessResponse struct {
 var jwtKey = []byte("key")
 
 type Claims struct {
-	id    int    `json:"id"`
-	email string `json:"email"`
-	role  string `json:"role"`
+	Id    int
+	Email string
+	Role  string
 	jwt.StandardClaims
 }
 
-func (api API) genereteJWT(userId *int, role *string) (string, error) {
-	expTime := time.Now().Add(60 * time.Minute)
-
-	claims := &Claims{
-		id:   *userId,
-		role: *role,
-		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: expTime.Unix(),
-		},
+func (api *API) getUserIdFromToken(c *gin.Context) (int, error) {
+	tokenString := c.GetHeader("Authorization")[(len("Bearer ")):]
+	claim := &Claims{}
+	token, err := jwt.ParseWithClaims(tokenString, claim, func(t *jwt.Token) (interface{}, error) {
+		return jwtKey, nil
+	})
+	if err != nil {
+		return -1, err
 	}
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	//tokenString, err := token.SigningString()
-	tokenString, err := token.SignedString(jwtKey)
-	return tokenString, err
+
+	if token.Valid {
+		claim := token.Claims.(*Claims)
+		return claim.Id, nil
+
+	} else {
+		return -1, errors.New("invalid token")
+	}
 }
 
 func ValidateToken(tokenString string) (*jwt.Token, error) {
@@ -65,22 +65,24 @@ func ValidateToken(tokenString string) (*jwt.Token, error) {
 	})
 	return token, err
 }
-func (api *API) getUserIdFromToken(c *gin.Context) (int, error) {
-	tokenString := c.GetHeader("Authorization")[(len("Bearer ")):]
-	claim := &Claims{}
-	token, err := jwt.ParseWithClaims(tokenString, claim, func(token *jwt.Token) (interface{}, error) {
-		return jwtKey, nil
-	})
-	if err != nil {
-		return -1, err
+
+func (api API) generateJWT(userId *int, role *string) (string, error) {
+	expTime := time.Now().Add(60 * time.Minute)
+
+	claims := &Claims{
+		Id:   *userId,
+		Role: *role,
+		StandardClaims: jwt.StandardClaims{
+			ExpiresAt: expTime.Unix(),
+		},
 	}
-	if token.Valid {
-		claim := token.Claims.(*Claims)
-		return claim.id, nil
-	} else {
-		return -1, errors.New("Invalid Tokens")
-	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+
+	tokenString, err := token.SignedString(jwtKey)
+	return tokenString, err
 }
+
 func (api *API) register(c *gin.Context) {
 	var input RegisterReqBody
 	err := c.BindJSON(&input)
@@ -98,17 +100,19 @@ func (api *API) register(c *gin.Context) {
 		}
 		return
 	}
-	userId, responseCode, err := api.userRepo.InsertNewUser(input.Name, input.Email, input.Password, input.Role, input.Program, input.Company, input.Batch)
+
+	userId, responseCode, err := api.userRepo.InsertUser(input.Name, input.Email, input.Password, input.Role)
 	if err != nil {
 		c.AbortWithStatusJSON(responseCode, gin.H{"error": err.Error()})
 		return
 	}
 
-	tokenString, err := api.genereteJWT(&userId, &input.Role)
+	tokenString, err := api.generateJWT(&userId, &input.Role)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+
 	c.JSON(http.StatusOK, RegisterSuccessResponse{Message: "success", Token: tokenString})
 }
 
@@ -141,7 +145,7 @@ func (api *API) login(c *gin.Context) {
 		return
 	}
 
-	tokenString, err := api.genereteJWT(userId, role)
+	tokenString, err := api.generateJWT(userId, role)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

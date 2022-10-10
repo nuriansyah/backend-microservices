@@ -3,8 +3,6 @@ package seeder
 import (
 	"database/sql"
 	"golang.org/x/crypto/bcrypt"
-
-	_ "github.com/mattn/go-sqlite3"
 )
 
 func Seed(db *sql.DB) {
@@ -19,7 +17,7 @@ func Seed(db *sql.DB) {
 		panic(err)
 	}
 
-	db.Exec("INSERT INTO user_details (user_id, program, company, batch) VALUES (?, 'MSIB', 'Binar Academy', 2019)", userMahasiswaId)
+	db.Exec("INSERT INTO user_details (user_id, nrp, prodi, program, company, batch) VALUES (?,'183040067','Informatika', 'MSIB', 'Binar Academy', 2019)", userMahasiswaId)
 
 	// User Siswa
 	rowUserDosen, err := db.Exec("INSERT INTO users (name, email, password, role) VALUES ('Dosen A', 'dosena@gmail.com', ?, 'dosen')", hashedPassword)

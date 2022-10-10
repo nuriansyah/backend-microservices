@@ -6,20 +6,6 @@ import (
 	"time"
 )
 
-type Posts struct {
-	ID            int            `db:"id"`
-	AuthorID      int            `db:"author_id"`
-	AuthorName    string         `db:"author_name"`
-	AuthorRole    string         `db:"author_role"`
-	AuthorAvatar  sql.NullString `db:"author_avatar"`
-	AuthorProgram sql.NullString `db:"author_program"`
-	AuthorCompany sql.NullString `db:"author_company"`
-	AuthorBatch   sql.NullInt32  `db:"author_batch"`
-	Title         string         `db:"title"`
-	Description   string         `db:"desc"`
-	CreatedAt     time.Time      `db:"created_at"`
-}
-
 type PostRepository struct {
 	db *sql.DB
 }
@@ -34,8 +20,8 @@ var (
 	ErrPostNotFound = errors.New("Post not found")
 )
 
-func (p *PostRepository) InserPost(authorID int, title, description string) (int64, error) {
-	sqlStatement := "INSERT INTO posts (author_id, title, desc, created_at) VALUES ( ?, ?, ?, ?);"
+func (p *PostRepository) InsertPost(authorID int, title, description string) (int64, error) {
+	sqlStatement := "INSERT INTO posts (author_id, title, desc, created_at) VALUES ( $1, $2, $3, $4) RETURNING id;"
 	tx, err := p.db.Begin()
 	if err != nil {
 		return 0, err
@@ -67,7 +53,7 @@ func (p *PostRepository) FetchPostByID(postID, authorID int) ([]Posts, error) {
 							u.name as author_name,
 							u.role as author_role,
 							ud.program as author_program,
-							ud.company as author_comapany,
+							ud.company as author_company,
 							ud.batch as author_batch,
 							p.title as title,
 							p.desc as desc,
@@ -75,7 +61,7 @@ func (p *PostRepository) FetchPostByID(postID, authorID int) ([]Posts, error) {
 					FROM posts p
 					INNER JOIN users u ON p.author_id = u.id
 					LEFT JOIN user_details ud ON u.id = ud.user_id
-					WHERE p.id = ?`
+					WHERE p.id = $1`
 	tx, err := p.db.Begin()
 	if err != nil {
 		return nil, err
@@ -108,7 +94,7 @@ func (p *PostRepository) FetchPostByID(postID, authorID int) ([]Posts, error) {
 
 func (p *PostRepository) FetchAuthorIDByPostID(postID int) (int, error) {
 	sqlStatement := `
-		SELECT author_id FROM posts WHERE id = ?;
+		SELECT author_id FROM posts WHERE id = $1;
 	`
 
 	tx, err := p.db.Begin()
