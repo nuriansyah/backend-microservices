@@ -43,15 +43,22 @@ func main() {
 
 func (u *UserRepository) Login(email, password string) (*int, error) {
 	sqlStatement := "SELECT id, password FROM users WHERE email = $1"
-	res := u.db.QueryRow(sqlStatement, email, password)
+	res := u.db.QueryRow(sqlStatement, email)
 	var hashedPassword string
 	var id int
-	res.Scan(&id, &hashedPassword)
-	err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
+	err := res.Scan(&id, &hashedPassword)
+	if err != nil {
+		return nil, err
+	}
+
+	fmt.Println("line 51")
+	fmt.Print(id)
+	err = bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
+	fmt.Print("line 52")
+	fmt.Print(&hashedPassword)
 	if err != nil {
 		if errors.Is(err, bcrypt.ErrMismatchedHashAndPassword) {
-			fmt.Println("Wrong Passowrd")
-			return nil, err
+			fmt.Println("Wrong Password")
 		}
 		panic(err)
 	}
@@ -123,15 +130,10 @@ func (u *UserRepository) InsertUser(name, email, password, role string) (userId,
 		return -1, http.StatusBadRequest, errors.New("invalid email")
 	}
 	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-
-	s := string([]byte(hashedPassword))
-	println(s)
-
-	println(&hashedPassword)
 	sqlStatement := `INSERT INTO users (name,email,password,role) VALUES ($1,$2,$3,$4) RETURNING id`
 
 	var id int
-	err = u.db.QueryRow(sqlStatement, name, email, string(hashedPassword), strings.ToLower(role)).Scan(&id)
+	err = u.db.QueryRow(sqlStatement, name, email, hashedPassword, strings.ToLower(role)).Scan(&id)
 
 	//stmt, err := u.db.Prepare(sqlStatement)
 	//if err != nil {
