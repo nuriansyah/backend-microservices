@@ -21,25 +21,22 @@ var (
 )
 
 func (p *PostRepository) InsertPost(authorID int, title, description string) (int64, error) {
-	sqlStatement := "INSERT INTO posts (author_id, title, desc, created_at) VALUES ( $1, $2, $3, $4) RETURNING id;"
+	sqlStatement := "INSERT INTO posts (author_id, title, description, created_at) VALUES ( $1, $2, $3, $4) RETURNING id;"
 	tx, err := p.db.Begin()
 	if err != nil {
 		return 0, err
 	}
 	defer tx.Rollback()
+	var id int
+	err = tx.QueryRow(sqlStatement, authorID, title, description, time.Now()).Scan(&id)
+	if err != nil {
+		return 0, err
+	}
 
-	result, err := tx.Exec(sqlStatement, authorID, title, description, time.Now())
-	if err != nil {
-		return 0, err
-	}
-	id, err := result.LastInsertId()
-	if err != nil {
-		return 0, err
-	}
 	if err := tx.Commit(); err != nil {
 		return 0, err
 	}
-	return id, err
+	return int64(id), err
 }
 
 func (p *PostRepository) FetchPostByID(postID, authorID int) ([]Posts, error) {

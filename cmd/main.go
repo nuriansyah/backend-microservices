@@ -2,13 +2,12 @@ package main
 
 import (
 	"errors"
-	"github.com/nuriansyah/log-mbkm-unpas/api"
-	"github.com/nuriansyah/log-mbkm-unpas/repository"
+	"github.com/nuriansyah/log-mbkm-unpas/cmd/api"
 	"github.com/nuriansyah/log-mbkm-unpas/src"
+	repository2 "github.com/nuriansyah/log-mbkm-unpas/src/repository"
 	"os"
 
 	_ "github.com/lib/pq"
-	_ "github.com/mattn/go-sqlite3"
 )
 
 func main() {
@@ -31,8 +30,8 @@ func main() {
 	//	panic(err)
 	//}
 
-	userRepo := repository.NewUserRepository(dbPostgres)
-	postRepo := repository.NewPostRepository(dbPostgres)
+	userRepo := repository2.NewUserRepository(dbPostgres)
+	postRepo := repository2.NewPostRepository(dbPostgres)
 	mainAPI := api.NewAPi(*userRepo, *postRepo)
 	mainAPI.Start()
 }

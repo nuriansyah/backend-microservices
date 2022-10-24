@@ -2,8 +2,7 @@ package main
 
 import (
 	"database/sql"
-
-	"github.com/nuriansyah/log-mbkm-unpas/db/migration"
+	"github.com/nuriansyah/log-mbkm-unpas/src/db/migration"
 
 	_ "github.com/lib/pq"
 )

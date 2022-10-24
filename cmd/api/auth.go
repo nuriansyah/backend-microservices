@@ -5,7 +5,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
-	"github.com/nuriansyah/log-mbkm-unpas/helper"
+	"github.com/nuriansyah/log-mbkm-unpas/src/helper"
 	"net/http"
 	"time"
 )

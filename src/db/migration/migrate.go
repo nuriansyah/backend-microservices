@@ -3,7 +3,7 @@ package migration
 import (
 	"database/sql"
 	_ "github.com/lib/pq"
-	"github.com/nuriansyah/log-mbkm-unpas/db/seeder"
+	"github.com/nuriansyah/log-mbkm-unpas/src/db/seeder"
 )
 
 func Migrate(db *sql.DB) {
