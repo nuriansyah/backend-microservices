@@ -28,6 +28,6 @@ type Posts struct {
 	AuthorCompany sql.NullString `db:"author_company"`
 	AuthorBatch   sql.NullInt32  `db:"author_batch"`
 	Title         string         `db:"title"`
-	Description   string         `db:"desc"`
+	Description   string         `db:"description"`
 	CreatedAt     time.Time      `db:"created_at"`
 }

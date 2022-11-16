@@ -51,10 +51,8 @@ func (u *UserRepository) Login(email, password string) (*int, error) {
 		return nil, err
 	}
 
-	fmt.Println("line 51")
-	fmt.Print(id)
 	err = bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
-	fmt.Print("line 52")
+
 	fmt.Print(&hashedPassword)
 	if err != nil {
 		if errors.Is(err, bcrypt.ErrMismatchedHashAndPassword) {

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"github.com/nuriansyah/log-mbkm-unpas/repository"
+	"github.com/nuriansyah/log-mbkm-unpas/src/repository"
 	"time"
 )
 
@@ -32,10 +32,10 @@ func NewAPi(userRepo repository.UserRepository, postRepo repository.PostReposito
 	router.POST("/register", api.register)
 
 	//router.GET("/api/post/:id", api.readPost)
-	//postRouter := router.Group("/api/post", AuthMiddleware())
-	//{
-	//	postRouter.POST("/", api.createPost)
-	//}
+	postRouter := router.Group("/api/post", AuthMiddleware())
+	{
+		postRouter.POST("/create", api.createPost)
+	}
 	router.GET("/users", api.getProfile)
 	profileRouter := router.Group("/api/profile", AuthMiddleware())
 	{
