@@ -11,7 +11,7 @@ services:
     tty: true
     build: .
     ports:
-      - "8000:8080"
+      - 8000:8080
     restart: on-failure
     volumes:
       - .:/app
@@ -21,7 +21,7 @@ services:
       - learning
 
   postgresdb:
-    image: postgres:latest
+    image: postgres:14-alpine
     container_name: postgres_container
     environment:
       - POSTGRES_USER=postgres
@@ -32,6 +32,15 @@ services:
       - "1234:5432"
     volumes:
       - ./pg_data:/var/lib/postgresql/data
+    networks:
+      - learning
+  migrate:
+    image: migrate/migrate
+    volumes:
+      - ./src/migration:/migrations
+    command: ["-path", "/migrations", "-database", "postgresql://postgres:secret@localhost:1234/log_km?sslmode=disable", "up"]
+    depends_on:
+      - postgresdb
     networks:
       - learning
 

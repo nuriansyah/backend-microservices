@@ -2,20 +2,18 @@ package main
 
 import (
 	"errors"
+	_ "github.com/lib/pq"
 	"github.com/nuriansyah/log-mbkm-unpas/cmd/api"
 	"github.com/nuriansyah/log-mbkm-unpas/src"
 	repository2 "github.com/nuriansyah/log-mbkm-unpas/src/repository"
-	"os"
-
-	_ "github.com/lib/pq"
 )
 
 func main() {
-	os.Setenv("DB_USER", "postgres")
-	os.Setenv("DB_PASSWORD", "secret")
-	os.Setenv("DB_HOST", "localhost")
-	os.Setenv("DB_PORT", "1234")
-	os.Setenv("DB_DATABASE", "log_km")
+	//os.Setenv("DB_USER", "postgres")
+	//os.Setenv("DB_PASSWORD", "secret")
+	//os.Setenv("DB_HOST", "localhost")
+	//os.Setenv("DB_PORT", "1234")
+	//os.Setenv("DB_DATABASE", "log_km")
 	dbPostgres, err := src.ConnectPostgres()
 	if err != nil {
 		panic(err)

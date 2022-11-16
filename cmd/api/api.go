@@ -4,17 +4,17 @@ import (
 	"fmt"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	repository2 "github.com/nuriansyah/log-mbkm-unpas/src/repository"
+	"github.com/nuriansyah/log-mbkm-unpas/src/repository"
 	"time"
 )
 
 type API struct {
-	userRepo repository2.UserRepository
-	postRepo repository2.PostRepository
+	userRepo repository.UserRepository
+	postRepo repository.PostRepository
 	router   *gin.Engine
 }
 
-func NewAPi(userRepo repository2.UserRepository, postRepo repository2.PostRepository) API {
+func NewAPi(userRepo repository.UserRepository, postRepo repository.PostRepository) API {
 	router := gin.Default()
 	api := API{
 		userRepo: userRepo,

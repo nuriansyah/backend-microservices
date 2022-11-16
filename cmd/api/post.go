@@ -81,11 +81,12 @@ func (api *API) readPosts(ctx *gin.Context) {
 		ctx.JSON(http.StatusNotFound, ErrorPostResponse{Message: "Post Not Found"})
 	}
 
-	ctx.JSON(http.StatusOK, DetailPostResponse{
+	ctx.JSON(http.StatusCreated, DetailPostResponse{
 		PostResponse: PostResponse{
 			ID:          postID,
 			Title:       posts[0].Title,
-			Description: posts[0].Description},
+			Description: posts[0].Description,
+		},
 	})
 }
 func (api *API) getUserIDAvoidPanic(ctx *gin.Context) (authorID int) {
