@@ -31,7 +31,7 @@ func NewAPi(userRepo repository.UserRepository, postRepo repository.PostReposito
 	router.POST("/login", api.login)
 	router.POST("/register", api.register)
 
-	//router.GET("/api/post/:id", api.readPost)
+	router.GET("/api/post/:id", api.readPosts)
 	postRouter := router.Group("/api/post", AuthMiddleware())
 	{
 		postRouter.POST("/create", api.createPost)
