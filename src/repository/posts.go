@@ -53,7 +53,7 @@ func (p *PostRepository) FetchPostByID(postID, authorID int) ([]Posts, error) {
 							ud.company as author_company,
 							ud.batch as author_batch,
 							p.title as title,
-							p.desc as desc,
+							p.description as desc,
 							p.created_at as created_at
 					FROM posts p
 					INNER JOIN users u ON p.author_id = u.id

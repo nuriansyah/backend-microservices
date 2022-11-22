@@ -76,9 +76,11 @@ func (api *API) readPosts(ctx *gin.Context) {
 	if err != nil {
 		fmt.Println(err.Error())
 		ctx.JSON(http.StatusInternalServerError, ErrorPostResponse{Message: "Internal Server Error"})
+		return
 	}
 	if len(posts) == 0 {
 		ctx.JSON(http.StatusNotFound, ErrorPostResponse{Message: "Post Not Found"})
+		return
 	}
 
 	ctx.JSON(http.StatusCreated, DetailPostResponse{

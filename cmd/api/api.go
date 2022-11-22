@@ -1,11 +1,9 @@
 package api
 
 import (
-	"fmt"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/nuriansyah/log-mbkm-unpas/src/repository"
-	"time"
 )
 
 type API struct {
@@ -16,7 +14,7 @@ type API struct {
 
 func NewAPi(userRepo repository.UserRepository, postRepo repository.PostRepository) API {
 	router := gin.Default()
-	api := API{
+	api := &API{
 		userRepo: userRepo,
 		postRepo: postRepo,
 		router:   router,
@@ -43,23 +41,23 @@ func NewAPi(userRepo repository.UserRepository, postRepo repository.PostReposito
 		profileRouter.PATCH("/", api.updateProfile)
 		//profileRouter.PUT("/avatar", api.changeAvatar)
 	}
-	router.Use(gin.LoggerWithFormatter(func(param gin.LogFormatterParams) string {
-		return fmt.Sprintf("%s - [%s] \"%s %s %s %d %s \"%s\" %s\"\n",
-			param.ClientIP,
-			param.TimeStamp.Format(time.RFC1123),
-			param.Method,
-			param.Path,
-			param.Request.Proto,
-			param.StatusCode,
-			param.Latency,
-			param.Request.UserAgent(),
-			param.ErrorMessage,
-			param.Keys,
-		)
-	}))
+	//router.Use(gin.LoggerWithFormatter(func(param gin.LogFormatterParams) string {
+	//	return fmt.Sprintf("%s - [%s] \"%s %s %s %d %s \"%s\" %s\"\n",
+	//		param.ClientIP,
+	//		param.TimeStamp.Format(time.RFC1123),
+	//		param.Method,
+	//		param.Path,
+	//		param.Request.Proto,
+	//		param.StatusCode,
+	//		param.Latency,
+	//		param.Request.UserAgent(),
+	//		param.ErrorMessage,
+	//		param.Keys,
+	//	)
+	//}))
 	router.Use(gin.Recovery())
 
-	return api
+	return *api
 
 }
 
