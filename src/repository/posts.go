@@ -39,7 +39,7 @@ func (p *PostRepository) InsertPost(authorID int, title, description string) (in
 	return int64(id), err
 }
 
-func (p *PostRepository) FetchPostByID(postID, authorID int) ([]Posts, error) {
+func (p *PostRepository) FetchPostByID(postID int) ([]Posts, error) {
 	var (
 		posts        []Posts
 		sqlStatement string
@@ -65,7 +65,7 @@ func (p *PostRepository) FetchPostByID(postID, authorID int) ([]Posts, error) {
 	}
 	defer tx.Rollback()
 
-	rows, err := tx.Query(sqlStatement, postID, authorID)
+	rows, err := tx.Query(sqlStatement, postID)
 	if err != nil {
 		return nil, err
 	}

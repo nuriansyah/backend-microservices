@@ -55,7 +55,7 @@ func NewAPi(userRepo repository.UserRepository, postRepo repository.PostReposito
 	//		param.Keys,
 	//	)
 	//}))
-	router.Use(gin.Recovery())
+	//router.Use(gin.Recovery())
 
 	return *api
 

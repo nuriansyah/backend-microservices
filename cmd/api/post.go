@@ -66,13 +66,13 @@ func (api *API) readPosts(ctx *gin.Context) {
 		postID int
 		err    error
 	)
-	authorID := api.getUserIDAvoidPanic(ctx)
+	//authorID := api.getUserIDAvoidPanic(ctx)
 
 	if postID, err = strconv.Atoi(ctx.Param("id")); err != nil {
 		ctx.JSON(http.StatusBadRequest, ErrorPostResponse{Message: "Invalid Post ID"})
 		return
 	}
-	posts, err := api.postRepo.FetchPostByID(postID, authorID)
+	posts, err := api.postRepo.FetchPostByID(postID)
 	if err != nil {
 		fmt.Println(err.Error())
 		ctx.JSON(http.StatusInternalServerError, ErrorPostResponse{Message: "Internal Server Error"})
@@ -83,7 +83,7 @@ func (api *API) readPosts(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusCreated, DetailPostResponse{
+	ctx.JSON(http.StatusOK, DetailPostResponse{
 		PostResponse: PostResponse{
 			ID:          postID,
 			Title:       posts[0].Title,
